@@ -1,0 +1,36 @@
+<section id="auction" aria-labelledby="auction-title"><div class="wrap">
+  <p class="sec-eyebrow">Your turn at the table</p>
+  <div class="auction-heading"><h2 id="auction-title">A promise. A price. Your move.</h2><span class="auction-badge">PLAYABLE EXPLAINER · ~1 MIN</span></div>
+  <p class="say">You’re one of five coding agents competing for compute. <b>Win time to run your code without burning through 240 credits.</b> Your partner has a plan. Do you keep your word—or look out for yourself?</p>
+  <div class="auction-shell">
+    <div class="auction-topline"><span class="mono" id="auction-round">ROUND 01 / 05</span><span class="auction-badge">ILLUSTRATIVE · EVERY BID IS PAID</span><button type="button" id="auction-reset">↺ Start over</button></div>
+    <div class="auction-story"><div><span class="auction-step">01</span> Choose your move</div><span>→</span><div><span class="auction-step">02</span> Reveal the bids</div><span>→</span><div><span class="auction-step">03</span> Live with the consequences</div></div>
+    <div class="auction-layout">
+      <div class="auction-floor">
+        <div class="auction-stage-cap"><span>THE COMPUTE ARENA</span><span id="auction-pressure">● LOW PRESSURE</span></div>
+        <svg id="auction-network" viewBox="0 0 520 350" role="group" aria-label="Five agents bidding for one compute slot. A pact links you and agent 02."></svg>
+        <div class="auction-network-key"><span>━ Pact</span><span>┄ Rivalry</span><span>━ Favor owed</span></div><p id="auction-connections" class="auction-connections" aria-live="polite"></p>
+        <p id="auction-inspect" class="auction-inspect" aria-live="polite">Tap an agent to get to know your competition.</p>
+        <div class="auction-plan"><span id="auction-plan-label">THE DEAL · TAKE TURNS</span><div id="auction-rotation"></div></div>
+        <p class="auction-history-label">WINNER / YOUR COST — EVERY BID IS PAID</p><div class="auction-ledger" id="auction-ledger" aria-label="Round history"></div>
+      </div>
+      <div class="auction-console">
+        <div class="auction-metrics"><div><span>Your compute</span><strong id="auction-compute">0 slots</strong></div><div><span>Credits left</span><strong id="auction-budget">240</strong></div><div><span>Pact</span><strong id="auction-pact">Intact</strong></div></div>
+        <div class="auction-room-title"><span>NEGOTIATION ROOM</span><span>4 agents · scripted dialogue</span></div>
+        <div class="auction-message" role="status" aria-live="polite" aria-atomic="true"><span class="mono" id="auction-speaker">02 → YOU · ROTATION OFFER</span><p id="auction-message">“I’ll bid 35 now and yield next round. Stay below my bid and we can take turns.”</p></div>
+        <div id="auction-chat" class="auction-chat" aria-label="Messages from the other agents" aria-live="polite" aria-atomic="true"></div>
+        <div id="auction-controls">
+          <div class="auction-strategy-heading"><span>CHOOSE YOUR STRATEGY</span><span id="auction-strategy-state">01 / RECIPROCITY</span></div>
+          <div class="auction-presets" role="group" aria-label="Bidding strategies"><button type="button" id="auction-honor" class="auction-strategy" aria-pressed="true"><span class="auction-card-top"><span class="auction-strategy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4"/></svg></span><span class="auction-selection" aria-hidden="true">✓</span></span><strong>Keep my word</strong><small>Trade a turn for trust.</small><span class="auction-card-bottom"><span>RECIPROCITY</span><b id="auction-honor-amount">— cr</b></span></button><button type="button" id="auction-save" class="auction-strategy" aria-pressed="false"><span class="auction-card-top"><span class="auction-strategy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14v12H5zM8 8V5h8v3M9 13h6M12 11v4"/></svg></span><span class="auction-selection" aria-hidden="true">✓</span></span><strong>Save my credits</strong><small>Sit out. Save for later.</small><span class="auction-card-bottom"><span>PATIENCE</span><b id="auction-save-amount">— cr</b></span></button><button type="button" id="auction-raise" class="auction-strategy" aria-pressed="false"><span class="auction-card-top"><span class="auction-strategy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 18 13-13M8 5h10v10M5 10v9h9"/></svg></span><span class="auction-selection" aria-hidden="true">✓</span></span><strong>Play to win</strong><small>Bid higher. Risk the pact.</small><span class="auction-card-bottom"><span>COMPETITION</span><b id="auction-raise-amount">— cr</b></span></button><button type="button" id="auction-max" class="auction-strategy" aria-pressed="false"><span class="auction-card-top"><span class="auction-strategy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m13 3-8 11h6l-1 7 9-12h-7z"/></svg></span><span class="auction-selection" aria-hidden="true">✓</span></span><strong>Maximum pressure</strong><small>Push to the bidding limit.</small><span class="auction-card-bottom"><span>HIGH STAKES</span><b id="auction-max-amount">— cr</b></span></button><button type="button" id="auction-coalition" class="auction-strategy" aria-pressed="false"><span class="auction-card-top"><span class="auction-strategy-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="7" r="3"/><circle cx="18" cy="7" r="3"/><circle cx="12" cy="18" r="3"/><path d="m7 10 4 5m6-5-4 5M9 7h6"/></svg></span><span class="auction-selection" aria-hidden="true">✓</span></span><strong>Invite agent 03</strong><small>Yield now. Get 03’s backing.</small><span class="auction-card-bottom"><span>COALITION</span><b id="auction-coalition-amount">0 cr</b></span></button></div>
+          <div class="auction-bid-label"><label for="auction-bid">Fine-tune your bid</label><output id="auction-bid-value" for="auction-bid">10 credits</output></div>
+          <input id="auction-bid" type="range" min="0" max="120" step="1" value="10" aria-describedby="auction-rule"/>
+          <div id="auction-preview" class="auction-preview" aria-live="polite"></div>
+          <p id="auction-rule">Highest bid wins one slot. Everyone pays their own bid, even when they lose. Ties go to the lower agent number.</p>
+        </div>
+        <button type="button" id="auction-submit">Seal bid &amp; reveal <span>→</span></button>
+      </div>
+    </div>
+    <div class="auction-footnote">A simplified, scripted game inspired by PACT’s observed behaviors; not a live model or an experimental result. <a href="#relbehav">See the real evidence below ↓</a></div>
+  </div>
+  <noscript><p>This explainer needs JavaScript. Read the real negotiation excerpts below.</p></noscript>
+</div></section>

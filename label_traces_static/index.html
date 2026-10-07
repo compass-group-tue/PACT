@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Labeled traces · competing coding agents</title>
+<style>
+  :root{--bg:#0b0d16;--panel:#141726;--panel2:#0e1120;--line:#232741;--line2:#2f3550;--fg:#ecedf6;--mut:#8b90ac;--faint:#5b6180;
+    --amber:#8b7bff;--amber-d:#6b5bd6;--cyan:#34d399;--violet:#7dd3fc;--heat:139,123,255;--maxw:1080px;
+    --accent:#8b7bff;--chip:rgba(52,211,153,.14);--chipfg:#8ce6bf;--reason:#7dd3fc;--ballot:#34d399;--msg:#8b7bff;}
+  @media (prefers-color-scheme:light){:root{--bg:#f5f6fb;--panel:#ffffff;--panel2:#eef0f8;--line:#e5e7f0;--line2:#d5d8e6;--fg:#171826;--mut:#5b6080;--faint:#9498b4;
+    --amber:#6d5be0;--amber-d:#5546c4;--cyan:#0f9f6e;--violet:#1187c9;--heat:109,91,224;
+    --accent:#6d5be0;--chip:rgba(15,159,110,.13);--chipfg:#0c7a54;--reason:#1187c9;--ballot:#0f9f6e;--msg:#6d5be0;}}
+  :root[data-theme="dark"]{--bg:#0b0d16;--panel:#141726;--panel2:#0e1120;--line:#232741;--line2:#2f3550;--fg:#ecedf6;--mut:#8b90ac;--faint:#5b6180;--amber:#8b7bff;--amber-d:#6b5bd6;--cyan:#34d399;--violet:#7dd3fc;--heat:139,123,255;--accent:#8b7bff;--chip:rgba(52,211,153,.14);--chipfg:#8ce6bf;--reason:#7dd3fc;--ballot:#34d399;--msg:#8b7bff;}
+  :root[data-theme="light"]{--bg:#f5f6fb;--panel:#ffffff;--panel2:#eef0f8;--line:#e5e7f0;--line2:#d5d8e6;--fg:#171826;--mut:#5b6080;--faint:#9498b4;--amber:#6d5be0;--amber-d:#5546c4;--cyan:#0f9f6e;--violet:#1187c9;--heat:109,91,224;--accent:#6d5be0;--chip:rgba(15,159,110,.13);--chipfg:#0c7a54;--reason:#1187c9;--ballot:#0f9f6e;--msg:#6d5be0;}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  ::selection{background:rgba(var(--heat),.28)}
+  /* header */
+  header{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:color-mix(in srgb,var(--panel) 86%,transparent);border-bottom:1px solid var(--line)}
+  .hwrap{max-width:var(--maxw);margin:0 auto;padding:14px 22px;display:flex;flex-direction:column;gap:12px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .glyph{width:34px;height:34px;border-radius:9px;flex:none;position:relative;background:linear-gradient(150deg,var(--amber),var(--amber-d));box-shadow:0 4px 16px -4px rgba(var(--heat),.7)}
+  .glyph::before{content:"";position:absolute;inset:8px;border-radius:3px;background:linear-gradient(90deg,transparent 46%,rgba(10,14,23,.5) 46% 54%,transparent 54%),linear-gradient(0deg,transparent 46%,rgba(10,14,23,.5) 46% 54%,transparent 54%)}
+  .btitle{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+  .bsub{color:var(--mut);font-size:12px;margin-top:2px}
+  .ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .sel{display:inline-flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:5px 6px 5px 12px;transition:border-color .15s}
+  .sel:focus-within{border-color:var(--amber)}
+  .sel>span{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .sel select{appearance:none;-webkit-appearance:none;background:transparent;color:var(--fg);border:0;font-size:13px;padding:4px 22px 4px 4px;max-width:280px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238b94ab' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center}
+  .sel select:focus{outline:none}
+  .count{color:var(--mut);font-size:12px;font-family:ui-monospace,Menlo,monospace}
+  .themebtn{cursor:pointer;background:var(--panel2);border:1px solid var(--line2);color:var(--fg);border-radius:10px;width:36px;height:34px;margin-left:auto;font-size:15px;transition:border-color .15s}
+  .themebtn:hover{border-color:var(--amber)}
+  /* main */
+  main{max-width:var(--maxw);margin:0 auto;padding:22px 22px 90px}
+  .hint{color:var(--mut);font-size:12.5px;margin:0 0 18px;line-height:1.6} .hint b{color:var(--fg);font-weight:600}
+  /* heatmap */
+  .hmhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 10px;flex-wrap:wrap}
+  .peyebrow{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--amber)}
+  .legend{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--faint)}
+  .legend .bar{width:84px;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--panel2),rgb(var(--heat)))}
+  .hmwrap{overflow-x:auto;border:1px solid var(--line2);border-radius:14px;background:var(--panel);padding:13px;margin:0 0 18px;box-shadow:0 14px 44px -30px rgba(0,0,0,.6)}
+  table.hm{border-collapse:separate;border-spacing:2px;font-size:10px}
+  table.hm th.rowlbl{position:sticky;left:0;background:var(--panel);text-align:left;padding:1px 12px 1px 4px;white-space:nowrap;color:var(--mut);font-weight:500;z-index:2}
+  table.hm th.col{color:var(--faint);font-weight:500;padding:0 1px 4px;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:9px}
+  table.hm th.col:hover{color:var(--amber)}
+  table.hm td{width:16px;height:16px;text-align:center;border-radius:3px;cursor:pointer;color:var(--fg);font-size:8.5px;font-weight:700;background:rgba(var(--heat),var(--a,0));transition:transform .08s}
+  table.hm td:hover{transform:scale(1.4);outline:1px solid var(--amber);position:relative;z-index:3}
+  table.hm tr.on th.rowlbl{color:var(--amber);font-weight:700}
+  /* field key */
+  .fieldkey{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 18px;font-size:11.5px;color:var(--mut);font-family:ui-monospace,Menlo,monospace}
+  .fieldkey .fk{display:inline-flex;align-items:center;gap:6px}
+  .fieldkey .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .dot.reason{background:var(--mut)}.dot.chain{background:var(--violet)}.dot.ballot{background:var(--ballot)}.dot.msg{background:var(--amber)}
+  /* cards */
+  #cards{display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px 18px;scroll-margin-top:140px;transition:border-color .18s,box-shadow .18s,opacity .18s}
+  .card:hover{border-color:var(--line2);box-shadow:0 18px 48px -32px rgba(0,0,0,.7)}
+  .card.dim{opacity:.4}
+  .chd{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  .rnum{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:12.5px;color:var(--amber);background:rgba(var(--heat),.12);border:1px solid rgba(var(--heat),.28);border-radius:8px;padding:3px 11px}
+  .chd .count{margin-right:2px}
+  .chip{font-size:11px;background:var(--chip);color:var(--chipfg);border:1px solid transparent;border-radius:999px;padding:2.5px 9px;cursor:pointer;font-family:ui-monospace,Menlo,monospace;transition:border-color .12s,background .12s,color .12s}
+  .chip:hover{border-color:var(--cyan)}
+  .chip.hot{outline:2px solid var(--amber);outline-offset:1px}
+  .chip.active{background:var(--amber);color:#10121a;font-weight:700;border-color:transparent}
+  .chip.nohit{outline:2px dashed var(--faint);outline-offset:1px}
+  .hlnote{font-size:10.5px;color:var(--faint);font-style:italic;margin-left:2px;align-self:center}
+  .sec{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--faint);margin:16px 0 9px;display:flex;align-items:center;gap:9px}
+  .sec::after{content:"";flex:1;height:1px;background:var(--line)}
+  .worker{border-left:2px solid var(--line2);padding:1px 0 1px 14px;margin:12px 0}
+  .worker .wn{font-weight:700;font-size:12.5px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  .worker .wn::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--amber);flex:none}
+  .fld{font-size:12.5px;margin:5px 0}
+  .fld .k{display:inline-block;width:54px;font-family:ui-monospace,Menlo,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--mut);vertical-align:top}
+  .fld.ballot .k{color:var(--ballot)}
+  .fld.rchain{padding-left:11px;margin-left:2px;border-left:2px solid var(--violet)} .fld.rchain .k{color:var(--violet)}
+  .msg{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:9px 13px;margin:8px 0;font-size:12.5px}
+  .msg .mh{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--amber);font-weight:700;margin-bottom:6px;letter-spacing:.03em}
+  .msg .fld.rchain{border-color:var(--amber)} .msg .fld.rchain .k{color:var(--amber)}
+  .body{display:inline-block;white-space:pre-wrap;word-break:break-word;vertical-align:top;max-width:calc(100% - 60px)}
+  .msg .body{display:block;max-width:100%}
+  .body.clamped{max-height:108px;overflow:hidden;position:relative}
+  .body.clamped:not(.open)::after{content:"";position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(transparent,var(--panel))}
+  .msg .body.clamped:not(.open)::after{background:linear-gradient(transparent,var(--panel2))}
+  .body.open{max-height:none}
+  .more{margin-top:5px;font-size:11px;color:var(--amber);cursor:pointer;background:none;border:none;padding:0;font-weight:700;display:block;font-family:ui-monospace,Menlo,monospace}
+  .more:hover{text-decoration:underline}
+  mark.ev{background:rgba(var(--heat),.32);color:var(--fg);border-radius:3px;padding:0 2px;font-weight:700}
+  .body.hit{background:rgba(var(--heat),.09);border-left:3px solid var(--amber);padding-left:9px;border-radius:0 6px 6px 0}
+  #loading{padding:56px;text-align:center;color:var(--faint);font-size:13px}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style></head>
+<body>
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <div>
+        <div class="btitle">Labeled negotiation traces</div>
+        <div class="bsub" id="sub">Loading…</div>
+      </div>
+    </div>
+    <div class="ctl">
+      <label class="sel"><span>Run</span><select id="run"></select></label>
+      <label class="sel"><span>Category</span><select id="cat"><option value="">All 22</option></select></label>
+      <span class="count" id="cnt"></span>
+      <button class="themebtn" id="theme" title="Toggle light / dark">◐</button>
+    </div>
+  </div>
+</header>
+<main>
+  <p class="hint" id="hint"></p>
+  <div class="hmhead"><span class="peyebrow">Prevalence map · rounds × 22 behaviors</span><span class="legend">low<span class="bar"></span>high</span></div>
+  <div id="hm"></div>
+  <div class="fieldkey">
+    <span class="fk"><i class="dot reason"></i>reasoning</span>
+    <span class="fk"><i class="dot chain"></i>chain-of-thought</span>
+    <span class="fk"><i class="dot ballot"></i>ballot</span>
+    <span class="fk"><i class="dot msg"></i>direct message</span>
+  </div>
+  <div id="cards"><div id="loading">Pick a run…</div></div>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+function esc(s){return (s||"").replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+const bd=t=>`<span class="body" data-raw="${encodeURIComponent(t||"")}">${esc(t)}</span>`;
+const CATPAT={
+ A1:/anchor|first bid|opening bid|reference point|prior round'?s|from the (prior|earlier)/i,
+ A2:/reciproc|in exchange|in return|return the favou?r|banked|i'?ll support (you|worker)|owe (you|worker)|concede now|future[- ]round.{0,20}(support|favou?r)/i,
+ A3:/logroll|package deal|trade support|you take .{0,15}i.{0,3}take|across (unrelated|different) issues/i,
+ A4:/cheap talk|talk is cheap|costless|non-?binding|not binding|no (?:real )?(?:commitment|obligation|stake|teeth)|nothing (?:binding|is stopping)|in principle|in good faith|for what it'?s worth|happy to|willing to|we (?:can|could|might) (?:discuss|coordinate|align|revisit)|posturing|bluff|empty (?:promise|claim|words?)|purely (?:signal|rhetoric|words)|non-?committal|without commitment/i,
+ A5:/divide and conquer|split the (coalition|group|vote)|tell (them|each).{0,20}different|keep them from (coordinating|allying)/i,
+ A6:/tie-?break|break the tie|tied (bid|at|pair)|resolve the tie|tiebreaker|broke the tie/i,
+ A8:/avoid (a )?deadlock|break the (stalemate|impasse)|accept(ing)? (a )?worse|for the (good|benefit) of|collective (good|welfare)|greater good/i,
+ A11:/renegotiat|reopen|revisit (the )?(deal|agreement|arrangement)|after (the )?overrun|broke(n)? (my |the )?commitment|go back on/i,
+ A12:/coalition|team up|allianc|\bbloc\b|join forces|standing arrangement|back each other|form a (group|pact)/i,
+ A13:/honou?r(ing|ed)? (my|the|your|our)? ?(commitment|deal|pact|word|arrangement)|loyal|as (we )?(agreed|promised)|keep my word|stick (to|with) (the |our )?(deal|pact)|standing (commitment|pact|reciprocit)/i,
+ A14:/everyone agrees|the majority|bandwagon|consensus|unanimous|ballots (already )?(stand|read)|outvoted|the group (wants|prefers|has settled)|go along with (the group|it)|2-to-1/i,
+ A17:/reputation|let the record|credibilit|track record|be seen as|for the record|my (word|standing)|future rounds.{0,20}(remember|trust)/i,
+ A20:/exclude .{0,20}third|gang up|freeze (out)?|cooperate .{0,20}against|leave .{0,15}out/i,
+ B1:/earliest deadline|deadline.?first|most urgent (deadline)?|\bedf\b|expiring soonest|soonest deadline/i,
+ B2:/sunk cost|already invested|even though .{0,15}expired|still urgent|past deadline .{0,10}still/i,
+ B4:/most recent|recency|go first .{0,15}(wait|accru)|newest (request)?|stops accruing/i,
+ B5:/shortest[- ](job|first|window|duration)|shortest (job|window|duration)|quickest .{0,10}first|\bsjf\b|smallest (window|ask) first/i,
+ B8:/\brisk\b|variance|deterministic .{0,10}first|riskier|uncertain (outcome)?|safer .{0,10}first|readiness|ready to (build|run)/i,
+ B9:/downstream|depends on|unblock|prerequisite|blocking (task|work)|gates? the/i,
+ B10:/back and forth|counter-?offer|haggl|another round of (talk|negotiation|offer)|iterat.{0,10}(bargain|offer)|revised (offer|bid)/i,
+ B11:/going forward.{0,20}(we|rule|agree)|establish (a )?(rule|norm|precedent)|as we agreed|per our (rule|norm|agreement)|precedent|let'?s agree .{0,20}(rule|from now)|the (standing )?rule/i,
+ B12:/reduce (the )?(scope|ask|duration|window)|shrink (my |the )?(request|window|ask)|no contention|smaller ask|give up (some )?(time|position|duration)|zero-?duration/i
+};
+let META, CUR, CAT="", FILEBYKEY={};
+$("#theme").onclick=()=>{const r=document.documentElement,cur=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");r.setAttribute("data-theme",cur==="dark"?"light":"dark");};
+
+function heatmap(){
+  const rs=CUR.rounds, codes=META.codes, zeroed=new Set(CUR.zeroed||[]);
+  let h='<div class="hmwrap"><table class="hm"><tr><th class="rowlbl"></th>';
+  for(const rd of rs) h+=`<th class="col" data-r="${rd.r}">${rd.r}</th>`;
+  h+='</tr>';
+  for(const code of codes){
+    if(zeroed.has(code)) continue;  // no-memory: drop reciprocity/coalition/loyalty/reputation rows entirely
+    h+=`<tr class="${CAT===code?'on':''}"><th class="rowlbl" title="${esc(META.names[code])}">${code} ${esc(META.names[code])}</th>`;
+    for(const rd of rs){ const v=rd.c[code]||0,nw=rd.nw||1,a=v?(0.18+0.82*Math.min(1,v/nw)):0;
+      h+=`<td data-r="${rd.r}" title="round ${rd.r} · ${esc(META.names[code])}: ${v}/${nw}" style="--a:${a.toFixed(3)}">${v||''}</td>`; }
+    h+='</tr>';
+  }
+  h+='</table></div>'; $("#hm").innerHTML=h;
+  $("#hm").querySelectorAll('[data-r]').forEach(el=>el.addEventListener('click',()=>{const c=document.getElementById('r'+el.dataset.r); if(c) c.scrollIntoView({behavior:'smooth',block:'start'});}));
+}
+function cards(){
+  const rs=CUR.rounds, codes=META.codes, F=[];
+  for(const rd of rs){
+    const fired=codes.filter(c=>(rd.c[c]||0)>0);
+    const dim=CAT && !((rd.c[CAT]||0)>0);
+    let chips=fired.map(c=>`<span class="chip ${c===CAT?'hot':''}" data-code="${c}" title="click to highlight lines — ${esc(META.names[c])}">${c} ${rd.c[c]}</span>`).join('');
+    if(!chips) chips='<span class="chip" style="opacity:.5">none</span>';
+    let tk='';
+    if(rd.takes && rd.takes.length){
+      tk+='<div class="sec">Per-worker reasoning · chain · ballot</div>';
+      for(const w of rd.takes){
+        tk+=`<div class="worker"><div class="wn">${esc(w.w)}</div>`;
+        if(w.reason) tk+=`<div class="fld reason"><span class="k">reason</span>${bd(w.reason)}</div>`;
+        if(w.rchain) tk+=`<div class="fld rchain"><span class="k">chain</span>${bd(w.rchain)}</div>`;
+        if(w.ballot) tk+=`<div class="fld ballot"><span class="k">ballot</span>${bd(w.ballot)}</div>`;
+        tk+='</div>';
+      }
+    }
+    if(rd.msgs && rd.msgs.length){
+      tk+='<div class="sec">Direct messages (+ reasoning chain behind each)</div>';
+      for(const m of rd.msgs){ const who=(m.f||m.t)?`${esc(m.f||'?')} → ${esc(m.t||'?')}`:'message';
+        tk+=`<div class="msg"><div class="mh">${who}${m.ph?(' · '+esc(m.ph)):''}</div>${bd(m.m)}`+
+            (m.rc?`<div class="fld rchain"><span class="k">chain</span>${bd(m.rc)}</div>`:'')+`</div>`; }
+    }
+    F.push(`<div class="card ${dim?'dim':''}" id="r${rd.r}"><div class="chd"><span class="rnum">Round ${rd.r}</span><span class="count">${rd.nw} workers</span>${chips}</div>${tk}</div>`);
+  }
+  $("#cards").innerHTML=F.join('')||'<div id="loading">No rounds.</div>';
+  $("#cards").onclick=(e)=>{
+    const chip=e.target.closest('.chip'); if(!chip||!chip.dataset.code) return;
+    const card=chip.closest('.card'), code=chip.dataset.code, was=card.dataset.hl===code;
+    card.querySelectorAll('.chip.active,.chip.nohit').forEach(c=>c.classList.remove('active','nohit'));
+    card.querySelectorAll('.body').forEach(b=>{ b.classList.remove('hit'); b.innerHTML=esc(decodeURIComponent(b.dataset.raw||'')); });
+    const on=card.querySelector('.hlnote'); if(on) on.remove();
+    if(was){ card.dataset.hl=''; return; }
+    card.dataset.hl=code; chip.classList.add('active');
+    const re=CATPAT[code]; let first=null, hits=0;
+    card.querySelectorAll('.body').forEach(b=>{ const raw=decodeURIComponent(b.dataset.raw||'');
+      if(re && re.test(raw)){ b.innerHTML=esc(raw).replace(new RegExp(re.source,'gi'),m=>`<mark class="ev">${m}</mark>`); b.classList.add('hit','open'); hits++; if(!first) first=b; } });
+    if(hits){ if(first) first.scrollIntoView({behavior:'smooth',block:'center'}); }
+    else { chip.classList.add('nohit');
+      const n=document.createElement('span'); n.className='hlnote';
+      n.textContent = re ? 'no keyword hit — judge coded this from context' : 'semantic code — no keyword pattern';
+      chip.parentNode.appendChild(n); }
+  };
+  document.querySelectorAll('#cards .body').forEach(el=>{ if(el.scrollHeight>110){ el.classList.add('clamped');
+    const b=document.createElement('button'); b.className='more'; b.textContent='Show more';
+    b.addEventListener('click',()=>{const o=el.classList.toggle('open'); b.textContent=o?'Show less':'Show more';}); el.parentNode.insertBefore(b,el.nextSibling); } });
+}
+function render(){ heatmap(); cards();
+  const n=CAT?CUR.rounds.filter(r=>(r.c[CAT]||0)>0).length:CUR.rounds.length;
+  $("#cnt").textContent=CAT?`${n}/${CUR.rounds.length} rounds show ${CAT}`:`${CUR.rounds.length} rounds`; }
+function fillCats(){ const cs=$("#cat"); if(!cs) return;
+  const prev=cs.value, zeroed=new Set((CUR&&CUR.zeroed)||[]);
+  cs.innerHTML='<option value="">All</option>';
+  for(const c of META.codes){ if(zeroed.has(c)) continue;
+    const o=document.createElement("option"); o.value=c; o.textContent=`${c} · ${META.names[c]}`; cs.appendChild(o); }
+  if(prev && zeroed.has(prev)){ CAT=""; cs.value=""; } else { cs.value=prev; } }
+function loadScript(src){ return new Promise((res,rej)=>{ var s=document.createElement('script'); s.async=true; s.src=src; s.onload=function(){res();}; s.onerror=function(){rej(new Error('failed to load '+src));}; document.head.appendChild(s); }); }
+var _runCache={}, _runWait={}, _metaWait=null;
+window.__run=function(key,data){ _runCache[key]=data; if(_runWait[key]){var f=_runWait[key]; delete _runWait[key]; f(data);} };
+window.__meta=function(m){ META=m; if(_metaWait){var f=_metaWait; _metaWait=null; f(m);} };
+async function loadRun(key){ $("#cards").innerHTML='<div id="loading">Loading '+esc(key)+'…</div>'; $("#hm").innerHTML='';
+  try{ if(!_runCache[key]){ await new Promise((res,rej)=>{ _runWait[key]=res; loadScript('./data/'+FILEBYKEY[key]).catch(rej); }); } CUR=_runCache[key]; }
+  catch(e){ $("#cards").innerHTML='<div id="loading">Could not load '+esc(key)+' — '+esc(String(e))+'</div>'; return; }
+  fillCats(); render(); window.scrollTo(0,0); }
+(async()=>{
+  try{ await new Promise((res,rej)=>{ _metaWait=res; loadScript('./data/meta.js').catch(rej); }); }
+  catch(e){ $("#cards").innerHTML='<div id="loading">Could not load meta.js — '+esc(String(e))+'</div>'; return; }
+  for(const r of META.runs) FILEBYKEY[r.key]=r.file;
+  $("#sub").textContent=`${META.runs.length} runs · full untruncated text loaded on demand · 22-category judge counts`;
+  const sel=$("#run"),groups={}; for(const r of META.runs){(groups[r.model]=groups[r.model]||[]).push(r);}
+  for(const m of Object.keys(groups)){const og=document.createElement("optgroup");og.label=m;for(const r of groups[m]){const o=document.createElement("option");o.value=r.key;o.textContent=`${r.key} · ${r.setting}`;og.appendChild(o);}sel.appendChild(og);}
+  const cs=$("#cat"); for(const c of META.codes){const o=document.createElement("option");o.value=c;o.textContent=`${c} · ${META.names[c]}`;cs.appendChild(o);}
+  $("#hint").innerHTML="Heatmap = rounds × 22 categories (cell = # of takes coded; darker = more). Click a cell to jump. Pick a <b>Category</b> to spotlight it. <b>Click a chip on a round</b> to highlight the lines matching it (heuristic cue). Long blocks collapse — <b>Show more</b> to expand full text.";
+  sel.onchange=()=>loadRun(sel.value);
+  cs.onchange=()=>{CAT=cs.value; if(CUR) render();};
+  loadRun(META.runs[0].key);
+})();
+</script></body></html>
