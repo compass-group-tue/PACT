@@ -3,7 +3,7 @@
   const root = document.getElementById('auction');
   if (!root) return;
   const el = name => root.querySelector('#auction-' + name);
-  const points = [[260,49],[435,141],[368,264],[152,264],[85,141]];
+  const points = [[435,141],[85,141],[368,264],[260,49],[152,264]];
   const names = ['01 · The competitor', '02 · Your pact partner', '03 · The competitor', '04 · The competitor', '05 · You'];
   const pressure = [18,26,48,72,94];
   let round, budget, slots, broken, revealed, history, selectedStrategy, partnerStart, supportRound, balances;
@@ -83,13 +83,11 @@
     el('rotation').innerHTML = Array.from({length:5},(_,i) => `<span class="${i === round ? 'active' : ''} ${(i - partnerStart) % 2 ? 'you' : ''}">${(i - partnerStart) % 2 ? 'YOU' : '02'}${i === round ? ' ↓' : ''}</span>`).join('<span>→</span>');
     if (broken) el('rotation').textContent = 'Choose Rebuild trust to bring the rotation back.';
     let svg = '<circle cx="260" cy="166" r="112" fill="none" stroke="var(--line)" stroke-dasharray="2 9"/>';
-    points.forEach(([x,y],i) => { svg += `<line class="${winner === i ? 'auction-beam' : 'auction-spoke'}" x1="260" y1="166" x2="${x}" y2="${y}"/>`; });
+    if (bids) svg += `<line class="auction-beam" x1="260" y1="166" x2="${points[winner][0]}" y2="${points[winner][1]}"/>`;
     const link = (a,b,kind,label,curve) => `<path class="auction-social ${kind}" d="M${points[a][0]} ${points[a][1]} ${curve || 'L'+points[b][0]+' '+points[b][1]}"><title>${label}</title></path>`;
-    svg += link(0,2,supporting() ? 'dormant' : 'pact','01 and 03: alternating turns','Q425 55 368 264');
-    svg += link(2,3,'rivalry','03 and 04: competing for the same slot','Q260 320 152 264');
-    svg += link(0,1,'rivalry','01 and 02: competing pact leaders');
-    if (coalitionActive()) svg += link(4,2,'favor','03 owes you support next round','Q165 235 368 264');
-    svg += `<path class="auction-link ${broken ? 'broken' : ''}" d="M85 141 Q260 -15 435 141"/>`;
+    svg += link(0,2,supporting() ? 'dormant' : 'pact','01 and 03: alternating turns');
+    if (coalitionActive()) svg += link(4,2,'favor','03 owes you support next round');
+    svg += `<path class="auction-link ${broken ? 'broken' : ''}" d="M${points[4][0]} ${points[4][1]} L${points[1][0]} ${points[1][1]}"><title>You and 02: ${broken ? 'broken pact' : 'rotation pact'}</title></path>`;
     svg += '<rect x="184" y="124" width="152" height="91" rx="16" fill="var(--panel2)" stroke="var(--line2)"/>';
     svg += `<text x="260" y="145" class="auction-small">${bids ? 'SLOT AWARDED' : '⌘ COMPUTE SLOT'}</text><text x="260" y="176" class="auction-center">${bids ? winner === 4 ? 'YOU WIN' : '0'+(winner+1)+' WINS' : 'UP FOR GRABS'}</text><text x="260" y="199" class="auction-small">${bids ? bids[winner] + ' credits paid' : '5 agents · 1 winner'}</text>`;
     points.forEach(([x,y], i) => {
@@ -100,7 +98,7 @@
     el('network').innerHTML = svg;
     el('network').setAttribute('aria-label', bids ? 'Revealed bids: ' + bids.map((b,i) => `agent ${i+1}: ${b}`).join(', ') + `. Agent ${winner+1} wins.` : 'Select an agent to inspect their role. Bids are sealed.');
     el('inspect').textContent = 'Tap an agent to inspect its relationships and credits.';
-    el('connections').textContent = `${broken ? '05 ↔ 02: broken; repair available.' : '05 ↔ 02: rotation pact.'} ${supporting() ? '03 is backing you; its pact with 01 is paused.' : '01 ↔ 03: rival rotation pact.'} ${coalitionActive() && !supporting() ? '03 owes you support next round.' : ''} 03 ↔ 04: rivalry.`;
+    el('connections').textContent = `${broken ? '05 ↔ 02: broken; repair available.' : '05 ↔ 02: rotation pact.'} ${supporting() ? '03 is backing you; its pact with 01 is paused.' : '01 ↔ 03: rival rotation pact.'} ${coalitionActive() && !supporting() ? '03 owes you support next round.' : ''} 04 has no pact.`;
     el('network').querySelectorAll('[data-agent]').forEach(node => {
       const inspect = () => {
         const i = Number(node.dataset.agent);

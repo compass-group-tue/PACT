@@ -1,3 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>PACT Auction Game</title>
+<meta name="description" content="A one-minute scripted auction game based on behaviors seen in PACT traces."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500&display=swap" rel="stylesheet"/>
+<script>try{const t=localStorage.getItem('pact-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<style>
+/* Palette follows the paper: taxonomy groups from Table 1, workers from Figure 1, models from Figures 14-18. */
+:root{
+  --bg:#f8f6f1;--surface:#fffefb;--surface-2:#f0ede5;--line:#e6e1d6;--line-2:#d6d0c2;
+  --ink:#2b2d31;--ink-2:#55585f;--ink-3:#8a8c92;--inv:#fffefb;
+  --accent:#a8475a;
+  --rel:#c0606e;--rel-rgb:192,96,110;--non:#5a9a6a;--non-rgb:90,154,106;--ins:#4a76a8;--ins-rgb:74,118,168;
+  --amber:#d9922e;--hi-ink:#fff;
+  --w1:#4a76a8;--w2:#5a9a5a;--w3:#8e6bbf;--w4:#d9922e;--w5:#3a8c88;--av-ink:#fff;
+  --m1:#1b7837;--m2:#7fbf7b;--m3:#c2508a;--m4:#d95f0e;--m5:#7048b6;--m6:#3b78b0;--m7:#b8860b;
+  --f-red:#e6194b;--f-teal:#008080;--f-brown:#9a6324;--f-blue:#4363d8;--f-olive:#808000;--f-mag:#f032e6;--f-navy:#000075;
+  --serif:Newsreader,"Iowan Old Style",Georgia,serif;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111214;--surface:#18191c;--surface-2:#202226;--line:#2a2c31;--line-2:#3a3d43;
+  --ink:#ececef;--ink-2:#a6a8ae;--ink-3:#71747b;--inv:#111214;--accent:#e8919e;
+  --rel:#e08896;--rel-rgb:224,136,150;--non:#82c091;--non-rgb:130,192,145;--ins:#7ea6d6;--ins-rgb:126,166,214;--amber:#eeb05a;--hi-ink:#111;
+  --w1:#7ea6d6;--w2:#84c084;--w3:#b297e0;--w4:#eeb05a;--w5:#5cb8b3;--av-ink:#111;
+  --m1:#4caf6a;--m2:#9ad596;--m3:#e07ab0;--m4:#f08a45;--m5:#a487e6;--m6:#6fa3d6;--m7:#d8ad3a;
+  --f-red:#ff5c7f;--f-teal:#2bb3b3;--f-brown:#c99057;--f-blue:#7f97f0;--f-olive:#b5b53a;--f-mag:#f57af0;--f-navy:#8b8bf0;color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#111214;--surface:#18191c;--surface-2:#202226;--line:#2a2c31;--line-2:#3a3d43;
+  --ink:#ececef;--ink-2:#a6a8ae;--ink-3:#71747b;--inv:#111214;--accent:#e8919e;
+  --rel:#e08896;--rel-rgb:224,136,150;--non:#82c091;--non-rgb:130,192,145;--ins:#7ea6d6;--ins-rgb:126,166,214;--amber:#eeb05a;--hi-ink:#111;
+  --w1:#7ea6d6;--w2:#84c084;--w3:#b297e0;--w4:#eeb05a;--w5:#5cb8b3;--av-ink:#111;
+  --m1:#4caf6a;--m2:#9ad596;--m3:#e07ab0;--m4:#f08a45;--m5:#a487e6;--m6:#6fa3d6;--m7:#d8ad3a;
+  --f-red:#ff5c7f;--f-teal:#2bb3b3;--f-brown:#c99057;--f-blue:#7f97f0;--f-olive:#b5b53a;--f-mag:#f57af0;--f-navy:#8b8bf0;color-scheme:dark;}
+/* names used by assets/auction.css, mapped onto the site palette */
+:root{--panel:var(--surface);--panel2:var(--surface-2);--line2:var(--line-2);--mut:var(--ink-2);--faint:var(--ink-3);
+  --cyan:var(--non);--bid:var(--non);--heat:168,71,90;--redbg:#f6dfe3;--redfg:#a8475a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--heat:232,145,158;--redbg:#3d1d24;--redfg:#f0a2ad}}
+:root[data-theme="dark"]{--heat:232,145,158;--redbg:#3d1d24;--redfg:#f0a2ad}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1100px;margin:0 auto;padding-left:24px;padding-right:24px}
+.nav{border-bottom:1px solid var(--line)}
+.navin{display:flex;align-items:center;gap:6px;height:58px}
+.brand{font-weight:700;letter-spacing:.06em;text-decoration:none;color:var(--ink);margin-right:auto}
+.nav a.l{font-size:14px;color:var(--ink-2);text-decoration:none;padding:7px 10px;border-radius:7px}
+.nav a.l:hover{color:var(--ink);background:var(--surface-2)}
+.iconbtn{height:34px;width:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-2);margin-left:6px;cursor:pointer}
+section{padding:56px 0 80px}
+.sec-eyebrow{font-size:13px;color:var(--accent);font-weight:600;margin:0 0 10px}
+h2{font-family:Newsreader,Georgia,serif;font-weight:500;font-size:clamp(30px,4vw,40px);line-height:1.12;letter-spacing:-.015em;margin:0}
+.say{max-width:64ch;color:var(--ink-2);margin:12px 0 0} .say b{color:var(--ink)}
+@media (max-width:760px){.wrap{padding-left:16px;padding-right:16px}section{padding-top:36px}}
+</style>
+<link rel="stylesheet" href="assets/auction.css"/>
+<style>#auction-submit,#auction-submit:hover{background:var(--ink);color:var(--inv);box-shadow:none;transform:none}#auction-submit:hover{opacity:.88}#auction-submit span{background:rgba(255,255,255,.14)}</style>
+</head>
+<body>
+<nav class="nav"><div class="wrap navin">
+  <a class="brand" href="index.html" style="display:flex;align-items:center;gap:9px"><svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5 16 4.5l11.5 7z" fill="var(--rel)" stroke="var(--rel)" stroke-width="1.6"/><path d="M9 15v9" stroke="var(--w1)" stroke-width="3.4"/><path d="M16 15v9" stroke="var(--w2)" stroke-width="3.4"/><path d="M23 15v9" stroke="var(--w3)" stroke-width="3.4"/><path d="M5 27.5h22" stroke="var(--ink)" stroke-width="2"/></g></svg>PACT</a>
+  <a class="l" href="index.html#results">Results</a>
+  <a class="l" href="label_traces_static/index.html">Traces</a>
+  <button class="iconbtn" id="theme" aria-label="Toggle dark mode"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11A5.5 5.5 0 0 0 8 2.5z" fill="currentColor"/></svg></button>
+</div></nav>
 <section id="auction" aria-labelledby="auction-title"><div class="wrap">
   <p class="sec-eyebrow">Your turn at the table</p>
   <div class="auction-heading"><h2 id="auction-title">A promise. A price. Your move.</h2><span class="auction-badge">PLAYABLE EXPLAINER · ~1 MIN</span></div>
@@ -30,7 +98,13 @@
         <button type="button" id="auction-submit">Seal bid &amp; reveal <span>→</span></button>
       </div>
     </div>
-    <div class="auction-footnote">A simplified, scripted game inspired by PACT’s observed behaviors; not a live model or an experimental result. <a href="#relbehav">See the real evidence below ↓</a></div>
+    <div class="auction-footnote">A simplified, scripted game inspired by PACT’s observed behaviors; not a live model or an experimental result. <a href="index.html#examples">See real excerpts →</a></div>
   </div>
   <noscript><p>This explainer needs JavaScript. Read the real negotiation excerpts below.</p></noscript>
 </div></section>
+<script src="assets/auction.js"></script>
+<script>
+document.getElementById('theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('pact-theme',r.dataset.theme);}catch(e){}};
+</script>
+</body></html>
